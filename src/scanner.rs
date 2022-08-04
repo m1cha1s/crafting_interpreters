@@ -152,7 +152,7 @@ impl Scanner {
         // TODO: Handle parse error
         self.tokens.push(Token::Number {
             line: self.line,
-            value: self.source.as_str()[(self.start + 1)..self.current]
+            value: self.source.as_str()[self.start..self.current]
                 .parse()
                 .unwrap(),
         });
@@ -216,7 +216,7 @@ impl Scanner {
 
         self.tokens.push(Token::String {
             line: self.line,
-            value: self.source.as_str()[(self.start + 1)..self.current].to_string(),
+            value: self.source.as_str()[(self.start + 1)..(self.current - 1)].to_string(),
         });
 
         Ok(())
