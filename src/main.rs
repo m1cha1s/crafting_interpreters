@@ -14,7 +14,7 @@ fn main() {
         println!("Usage: cargo run [script]");
         return;
     } else if args.len() == 2 {
-        run_file(args[1].clone());
+        run_file(args[1].clone()).unwrap();
     } else {
         todo!();
         // run_prompt();

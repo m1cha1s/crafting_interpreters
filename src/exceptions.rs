@@ -1,4 +1,5 @@
 #[derive(Debug)]
 pub enum Exce {
-    UnknownChar { line: u64, column: u64 },
+    UnexpectedChar { line: u32, column: u32 },
+    UnterminatedString { line: u32, column: u32 },
 }
