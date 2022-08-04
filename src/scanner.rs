@@ -79,13 +79,14 @@ impl Scanner {
             '/' => {
                 if self.match_char('/') {
                     while self.peek() != '\n' && !self.is_at_end() {
-                        let _ = self.advance();
+                        _ = self.advance();
                     }
                 } else {
                     self.tokens.push(Slash { line });
                 }
             }
             '"' => self.string()?,
+            '0'..='9' => self.number()?,
             ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
             _ => {
@@ -97,6 +98,39 @@ impl Scanner {
         }
 
         Ok(())
+    }
+
+    fn number(&mut self) -> Result<(), Exce> {
+        let digits = '0'..='9';
+        while digits.contains(&self.peek()) {
+            _ = self.advance();
+        }
+
+        if self.peek() == '.' && digits.contains(&self.peek_next()) {
+            _ = self.advance();
+
+            while digits.contains(&self.peek()) {
+                _ = self.advance();
+            }
+        }
+
+        // TODO: Handle parse error
+        self.tokens.push(Token::Number {
+            line: self.line,
+            value: self.source.as_str()[(self.start + 1)..self.current]
+                .parse()
+                .unwrap(),
+        });
+
+        Ok(())
+    }
+
+    fn peek_next(&self) -> char {
+        if self.current + 1 >= self.source.len() {
+            '\0'
+        } else {
+            self.source.chars().nth(self.current + 1).unwrap()
+        }
     }
 
     fn peek(&self) -> char {
@@ -133,7 +167,7 @@ impl Scanner {
             if self.peek() == '\n' {
                 self.line += 1;
             }
-            let _ = self.advance();
+            _ = self.advance();
         }
 
         if self.is_at_end() {
@@ -143,7 +177,7 @@ impl Scanner {
             });
         }
 
-        let _ = self.advance();
+        _ = self.advance();
 
         self.tokens.push(Token::String {
             line: self.line,
