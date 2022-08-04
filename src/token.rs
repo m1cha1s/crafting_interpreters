@@ -19,7 +19,7 @@ pub enum Token {
     GreaterEqual { line: u32 },
     Less { line: u32 },
     LessEqual { line: u32 },
-    Identifier { line: u32, lexeme: String },
+    Identifier { line: u32 },
     String { line: u32, value: String },
     Number { line: u32, value: f32 },
     And { line: u32 },

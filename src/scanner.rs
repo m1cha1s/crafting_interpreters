@@ -87,6 +87,7 @@ impl Scanner {
             }
             '"' => self.string()?,
             '0'..='9' => self.number()?,
+            'a'..='z' | 'A'..='Z' | '_' => self.identifier(),
             ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
             _ => {
@@ -98,6 +99,40 @@ impl Scanner {
         }
 
         Ok(())
+    }
+
+    fn identifier(&mut self) {
+        use Token::*;
+
+        let line = self.line;
+
+        while let '0'..='9' | 'a'..='z' | 'A'..='Z' | '_' = self.peek() {
+            _ = self.advance();
+        }
+
+        let text = self.source.as_str().get(self.start..self.current).unwrap();
+
+        let tok_type = match text {
+            "and" => And { line },
+            "class" => Class { line },
+            "else" => Else { line },
+            "false" => False { line },
+            "for" => For { line },
+            "fun" => Fun { line },
+            "if" => If { line },
+            "nil" => Nil { line },
+            "or" => Or { line },
+            "print" => Print { line },
+            "return" => Return { line },
+            "super" => Super { line },
+            "this" => This { line },
+            "true" => True { line },
+            "var" => Var { line },
+            "while" => While { line },
+            _ => Identifier { line },
+        };
+
+        self.tokens.push(tok_type);
     }
 
     fn number(&mut self) -> Result<(), Exce> {
