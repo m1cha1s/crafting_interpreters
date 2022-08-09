@@ -10,6 +10,32 @@ impl Parser {
         Self { tokens, current: 0 }
     }
 
+    pub fn parse(&mut self) -> Expr {
+        self.expression()
+    }
+
+    fn synchronize(&mut self) {
+        _ = self.advance();
+
+        while !self.is_at_end() {
+            if matches!(self.previous().unwrap(), Semicolon { .. }) {
+                return;
+            }
+
+            match self.peek().unwrap() {
+                Class { .. } => return,
+                Fun { .. } => return,
+                For { .. } => return,
+                If { .. } => return,
+                Print { .. } => return,
+                Return { .. } => return,
+                Var { .. } => return,
+                While { .. } => return,
+                _ => _ = self.advance(),
+            }
+        }
+    }
+
     fn expression(&mut self) -> Expr {
         self.equality()
     }
@@ -44,7 +70,7 @@ impl Parser {
         if self.is_at_end() {
             None
         } else {
-            Some(self.tokens[(self.current - 1) as usize])
+            Some(self.tokens[(self.current - 1) as usize].clone())
         }
     }
 
@@ -52,7 +78,7 @@ impl Parser {
         if self.is_at_end() {
             None
         } else {
-            Some(self.tokens[self.current as usize])
+            Some(self.tokens[self.current as usize].clone())
         }
     }
 
@@ -127,26 +153,23 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Option<Expr> {
-        if matches!(self.peek().unwrap(), False { .. }) {
+        if matches!(
+            self.peek().unwrap(),
+            False { .. } | True { .. } | Nil { .. } | Number { .. } | String { .. }
+        ) {
             return Some(Expr::Literal {
-                val: Token::False { line: 0 },
-            });
-        }
-        if matches!(self.peek().unwrap(), True { .. }) {
-            return Some(Expr::Literal {
-                val: Token::True { line: 0 },
-            });
-        }
-        if matches!(self.peek().unwrap(), Nil { .. }) {
-            return Some(Expr::Literal {
-                val: Token::Nil { line: 0 },
+                val: self.advance().unwrap(),
             });
         }
 
-        if matches!(self.peek().unwrap(), Number { .. } | String { .. }) {
-            return Expr::Literal {
-                val: Token::False { line: 0 },
-            };
+        if matches!(self.peek().unwrap(), LeftParen { .. }) {
+            let expr = self.expression();
+            if !matches!(self.advance().unwrap(), RightParen { .. }) {
+                panic!("Expected \"(\"");
+            }
+            return Some(Expr::Grouping {
+                expr: Box::new(expr),
+            });
         }
 
         None

@@ -6,6 +6,7 @@ pub mod scanner;
 pub mod token;
 
 use exceptions::Exce;
+use parser::Parser;
 use scanner::Scanner;
 use std::{env, fs::File, io::Read, path::Path};
 
@@ -46,9 +47,11 @@ fn run(source: String) -> Result<(), Exce> {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens()?;
 
-    for token in tokens.iter() {
-        println!("{:?}", token);
-    }
+    let mut parser = Parser::new(tokens);
+
+    let expression = parser.parse();
+
+    println!("{}", ast_printer(expression));
 
     Ok(())
 }
