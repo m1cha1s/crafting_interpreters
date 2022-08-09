@@ -163,6 +163,7 @@ impl Parser {
         }
 
         if matches!(self.peek().unwrap(), LeftParen { .. }) {
+            _ = self.advance();
             let expr = self.expression();
             if !matches!(self.advance().unwrap(), RightParen { .. }) {
                 panic!("Expected \"(\"");
